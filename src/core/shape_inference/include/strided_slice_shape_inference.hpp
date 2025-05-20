@@ -120,8 +120,6 @@ std::vector<TRShape> shape_infer(const StridedSlice* op,
 
     auto& out = output_shapes.front();
     out.resize(0);
-
-    std::optional<std::pair<size_t, DimType>> last_dynamic_dim;
     int64_t input_shape_idx = 0;
     for (int64_t axis = 0; axis < number_axes; ++axis) {
         // add all dimensions hidden under the ellipsis mask if ellipsis mask is set
@@ -183,18 +181,13 @@ std::vector<TRShape> shape_infer(const StridedSlice* op,
                 const auto stop = end_mask.count(axis) ? &default_stop : end ? &(*end)[axis] : nullptr;
 
                 if constexpr (std::is_same_v<DimType, ov::Dimension>) {
-                    if (!begin || !end) {
-                        last_dynamic_dim = std::make_pair(out.size(),
-                                                          slice::make_dim(DimType(0, input_dim.get_max_length()),
-                                                                          default_start,
-                                                                          default_stop,
-                                                                          stride));
-                    }
-
                     // non-constant begin/end produce dynamic output dimensions unless the axis is ignored by setting
                     // the corresponding mask to 1; since the stride is constant it can still be applied on the bounds
-                    auto sliced_dim =
-                        start && stop ? slice::make_dim(input_dim, *start, *stop, stride) : last_dynamic_dim->second;
+                    auto sliced_dim = start && stop ? slice::make_dim(input_dim, *start, *stop, stride)
+                                                    : slice::make_dim(DimType(0, input_dim.get_max_length()),
+                                                                      default_start,
+                                                                      default_stop,
+                                                                      stride);
 
                     // for equal ov::Dimension do merge to get input label (always success)
                     if (sliced_dim == input_dim && sliced_dim != Dimension::dynamic()) {
@@ -213,13 +206,6 @@ std::vector<TRShape> shape_infer(const StridedSlice* op,
 
                 input_shape_idx++;
             }
-        }
-    }
-
-    if constexpr (std::is_same_v<DimType, ov::Dimension>) {
-        // TODO: #167791 at least one dim must remain dynamic for now
-        if (last_dynamic_dim.has_value() && out.is_static()) {
-            out[last_dynamic_dim->first] = std::move(last_dynamic_dim->second);
         }
     }
 

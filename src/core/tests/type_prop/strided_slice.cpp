@@ -778,17 +778,17 @@ INSTANTIATE_TEST_SUITE_P(type_prop,
                              },
                              ConstStridedSliceTestParams{
                                  "ignored_begin_ignored_end_const_strides",
-                                 {8, 16, 32},     // input_shape
-                                 {3},             // begin shape
-                                 {3},             // end shape
-                                 {2, 2, 6},       // strides
-                                 {1, 1, 1},       // begin mask
-                                 {1, 1, 1},       // end mask
-                                 {0, 0, 0},       // new axis mask
-                                 {0, 0, 0},       // shrink axis mask
-                                 {0, 0, 0},       // ellipsis mask
-                                 {4, 8, {0, 6}},  // reference shape   TODO: #167791
-                                 element::f32     // reference type
+                                 {8, 16, 32},  // input_shape
+                                 {3},          // begin shape
+                                 {3},          // end shape
+                                 {2, 2, 6},    // strides
+                                 {1, 1, 1},    // begin mask
+                                 {1, 1, 1},    // end mask
+                                 {0, 0, 0},    // new axis mask
+                                 {0, 0, 0},    // shrink axis mask
+                                 {0, 0, 0},    // ellipsis mask
+                                 {4, 8, 6},    // reference shape
+                                 element::f32  // reference type
                              }),
                          ConstStridedSliceShapeInferTest::get_test_case_name);
 
